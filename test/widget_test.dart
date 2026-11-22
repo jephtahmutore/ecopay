@@ -57,7 +57,13 @@ void main() {
     await tester.tap(find.byKey(const Key('getQuote')));
     await tester.pumpAndSettle();
 
-    await tester.ensureVisible(find.byKey(const Key('confirm')));
+    // The confirm button is below the quote card, so scroll the form until
+    // the list builds it.
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('confirm')),
+      200,
+      scrollable: find.descendant(of: find.byType(ListView), matching: find.byType(Scrollable)).first,
+    );
     await tester.tap(find.byKey(const Key('confirm')));
     await tester.pumpAndSettle();
 
