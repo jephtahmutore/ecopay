@@ -183,10 +183,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         Icon(Icons.verified_user, size: 16, color: scheme.onPrimary),
                         const SizedBox(width: 6),
-                        Text(
-                          'Your session is encrypted on this device',
-                          style: TextStyle(color: scheme.onPrimary),
-                        ),
+                        Flexible(child: Text('Your session is encrypted on this device', textAlign: TextAlign.center, style: TextStyle(color: scheme.onPrimary))),
                       ],
                     ),
                   ],
