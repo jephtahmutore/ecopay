@@ -14,6 +14,35 @@ class AuthProvider extends ChangeNotifier {
   String? error;
   bool busy = false;
 
+  /// App lock: when on, the app asks for the PIN after it was hidden.
+  bool appLockEnabled = true;
+  bool locked = false;
+  String? lockError;
+
+  void lock() {
+    if (status != AuthStatus.signedIn || !appLockEnabled || locked) return;
+    locked = true;
+    lockError = null;
+    notifyListeners();
+  }
+
+  Future<bool> unlock(String pin) async {
+    final ok = await _service.verifyPin(pin);
+    if (ok) {
+      locked = false;
+      lockError = null;
+    } else {
+      lockError = 'Wrong PIN. Try again.';
+    }
+    notifyListeners();
+    return ok;
+  }
+
+  void setAppLock(bool value) {
+    appLockEnabled = value;
+    notifyListeners();
+  }
+
   Future<void> restore() async {
     email = await _service.restoreSession();
     status = email == null ? AuthStatus.signedOut : AuthStatus.signedIn;
@@ -39,6 +68,7 @@ class AuthProvider extends ChangeNotifier {
   Future<void> signOut() async {
     await _service.signOut();
     email = null;
+    locked = false;
     status = AuthStatus.signedOut;
     notifyListeners();
   }
