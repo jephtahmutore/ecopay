@@ -17,6 +17,7 @@ class AuthService {
 
   static const _tokenKey = 'ecopay_session_token';
   static const _emailKey = 'ecopay_user_email';
+  static const _pinKey = 'ecopay_lock_pin';
 
   final FlutterSecureStorage _storage;
 
@@ -37,11 +38,26 @@ class AuthService {
     await Future<void>.delayed(const Duration(milliseconds: 400));
     await _storage.write(key: _tokenKey, value: _generateToken());
     await _storage.write(key: _emailKey, value: email.trim());
+    // Kept in encrypted secure storage so the app lock can check it.
+    await _storage.write(key: _pinKey, value: pin);
+  }
+
+  /// Checks the PIN for the app lock screen.
+  Future<bool> verifyPin(String pin) async {
+    final saved = await _storage.read(key: _pinKey);
+    if (saved == null) {
+      // Sessions from before the app lock existed: adopt the first PIN.
+      if (!isValidPin(pin)) return false;
+      await _storage.write(key: _pinKey, value: pin);
+      return true;
+    }
+    return saved == pin;
   }
 
   Future<void> signOut() async {
     await _storage.delete(key: _tokenKey);
     await _storage.delete(key: _emailKey);
+    await _storage.delete(key: _pinKey);
   }
 
   static bool isValidEmail(String email) =>

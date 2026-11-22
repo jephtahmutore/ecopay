@@ -1,73 +1,49 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
-import '../state/auth_provider.dart';
-import '../state/wallet_provider.dart';
-import '../utils/money.dart';
-import '../widgets/transfer_tile.dart';
-import 'send_money_screen.dart';
+import '../widgets/ui.dart';
+import 'activity_tab.dart';
+import 'dashboard_tab.dart';
+import 'insights_tab.dart';
+import 'profile_tab.dart';
 
-class HomeScreen extends StatelessWidget {
+/// The signed in shell: four tabs with a bottom navigation bar.
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
   @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _tab = 0;
+
+  @override
   Widget build(BuildContext context) {
-    final wallet = context.watch<WalletProvider>();
-    final auth = context.watch<AuthProvider>();
-    final scheme = Theme.of(context).colorScheme;
+    final pages = [
+      DashboardTab(onSeeAll: () => setState(() => _tab = 1)),
+      const ActivityTab(),
+      const InsightsTab(),
+      const ProfileTab(),
+    ];
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('EcoPay'),
-        actions: [
-          IconButton(
-            tooltip: 'Sign out',
-            icon: const Icon(Icons.logout),
-            onPressed: () => context.read<AuthProvider>().signOut(),
-          ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        key: const Key('sendMoney'),
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute<void>(builder: (_) => const SendMoneyScreen()),
+      body: SafeArea(child: PageWidth(child: pages[_tab])),
+      bottomNavigationBar: DecoratedBox(
+        decoration: const BoxDecoration(
+          boxShadow: [BoxShadow(color: Color(0x14101828), blurRadius: 20, offset: Offset(0, -4))],
         ),
-        icon: const Icon(Icons.send),
-        label: const Text('Send money'),
-      ),
-      body: ListView(
-        padding: const EdgeInsets.only(bottom: 96),
-        children: [
-          Container(
-            margin: const EdgeInsets.all(16),
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(color: scheme.primary, borderRadius: BorderRadius.circular(16)),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Hello, ${auth.email ?? ''}', style: TextStyle(color: scheme.onPrimary)),
-                const SizedBox(height: 12),
-                Text('Wallet balance', style: TextStyle(color: scheme.onPrimary)),
-                Text(
-                  Money.formatWithCurrency(wallet.balanceCents, WalletProvider.sendCurrency),
-                  key: const Key('balance'),
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(color: scheme.onPrimary),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text('Recent transfers', style: Theme.of(context).textTheme.titleMedium),
-          ),
-          if (wallet.transfers.isEmpty)
-            const Padding(
-              padding: EdgeInsets.all(24),
-              child: Text('No transfers yet. Tap Send money to start.', textAlign: TextAlign.center),
-            )
-          else
-            ...wallet.transfers.map((t) => TransferTile(transfer: t)),
+        child: NavigationBar(
+        selectedIndex: _tab,
+        onDestinationSelected: (i) => setState(() => _tab = i),
+        destinations: const [
+          NavigationDestination(icon: Icon(Icons.home_outlined), selectedIcon: Icon(Icons.home), label: 'Home'),
+          NavigationDestination(
+              icon: Icon(Icons.receipt_long_outlined), selectedIcon: Icon(Icons.receipt_long), label: 'Activity'),
+          NavigationDestination(
+              icon: Icon(Icons.insights_outlined), selectedIcon: Icon(Icons.insights), label: 'Insights'),
+          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person), label: 'Profile'),
         ],
+      ),
       ),
     );
   }

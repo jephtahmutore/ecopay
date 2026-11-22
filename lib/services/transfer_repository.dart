@@ -54,6 +54,19 @@ class TransferRepository {
     return transfer;
   }
 
+  /// Takes money out of the wallet, for bills, moves and scheduled sends.
+  void debit(int cents) {
+    if (cents <= 0) throw ArgumentError.value(cents, 'cents', 'must be positive');
+    if (cents > _balanceCents) throw InsufficientFundsException();
+    _balanceCents -= cents;
+  }
+
+  /// Adds money to the wallet, for example a top up from a bank.
+  void credit(int cents) {
+    if (cents <= 0) throw ArgumentError.value(cents, 'cents', 'must be positive');
+    _balanceCents += cents;
+  }
+
   String _newId() =>
       'EP${DateTime.now().millisecondsSinceEpoch}${_random.nextInt(900) + 100}';
 }
