@@ -70,7 +70,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Money sent'), findsOneWidget);
-    expect(find.text('Paid into the EcoCash wallet'), findsOneWidget);
+    expect(tester.widget<Text>(find.byKey(const Key('receiptAmount'))).data, 'USD 20.00');
   });
 
   testWidgets('user buys Econet airtime', (tester) async {
