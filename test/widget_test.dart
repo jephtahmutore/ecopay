@@ -64,6 +64,8 @@ void main() {
       200,
       scrollable: find.descendant(of: find.byType(ListView), matching: find.byType(Scrollable)).first,
     );
+    await tester.ensureVisible(find.byKey(const Key('confirm')));
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('confirm')));
     await tester.pumpAndSettle();
 
