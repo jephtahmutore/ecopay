@@ -8,6 +8,8 @@ import 'services/exchange_rate_service.dart';
 import 'services/transfer_repository.dart';
 import 'state/auth_provider.dart';
 import 'state/wallet_provider.dart';
+import 'theme/app_theme.dart';
+import 'widgets/glass.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -37,11 +39,8 @@ class EcoPayApp extends StatelessWidget {
       child: MaterialApp(
         title: 'EcoPay',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF0F4C5C)),
-          useMaterial3: true,
-          inputDecorationTheme: const InputDecorationTheme(border: OutlineInputBorder()),
-        ),
+        theme: AppTheme.dark(),
+        themeMode: ThemeMode.dark,
         home: const _AuthGate(),
       ),
     );
@@ -57,7 +56,7 @@ class _AuthGate extends StatelessWidget {
     final status = context.watch<AuthProvider>().status;
     switch (status) {
       case AuthStatus.unknown:
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        return const GlassScaffold(body: Center(child: CircularProgressIndicator()));
       case AuthStatus.signedOut:
         return const LoginScreen();
       case AuthStatus.signedIn:
