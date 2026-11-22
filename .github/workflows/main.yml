@@ -45,3 +45,28 @@ jobs:
         with:
           name: ecopay-apk
           path: build/app/outputs/flutter-apk/app-release.apk
+
+          
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Get the code
+        uses: actions/checkout@v4
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Get packages
+        run: flutter pub get
+
+      - name: Build Windows app
+        run: flutter build windows --release
+
+      - name: Save the Windows app
+        uses: actions/upload-artifact@v4
+        with:
+          name: ecopay-windows
+          path: build/windows/x64/runner/Release/
