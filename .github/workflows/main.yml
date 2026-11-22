@@ -3,7 +3,7 @@ name: Flutter CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, 'glass-*', 'feature/**' ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:   # adds a manual "Run workflow" button
