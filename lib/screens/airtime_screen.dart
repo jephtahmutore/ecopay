@@ -72,7 +72,7 @@ class _AirtimeScreenState extends State<AirtimeScreen> {
         .firstOrNull;
     final price = _data ? _bundles[_bundle].cents : _amount;
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(title: const Text('Airtime and data')),
       body: PageWidth(
         child: ListView(
@@ -242,10 +242,10 @@ class _BundleTile extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: selected ? AppColors.pink.withValues(alpha: 0.16) : AppColors.glass,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(color: selected ? AppColors.pink : AppColors.border, width: selected ? 2 : 1),
-          boxShadow: selected ? AppShadows.glow(AppColors.pink) : AppShadows.soft,
+          boxShadow: selected ? AppShadows.glow(AppColors.pink) : null,
         ),
         child: Row(
           children: [

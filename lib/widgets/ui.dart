@@ -1,3 +1,5 @@
+import 'dart:ui' show ImageFilter;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -74,40 +76,168 @@ class PageTitle extends StatelessWidget {
       );
 }
 
-/// White rounded card with a soft shadow.
+/// Frosted glass card: blurs what is behind it, with a light tint and a
+/// thin bright edge. Pass [gradient] for a solid coloured card instead.
 class AppCard extends StatelessWidget {
   const AppCard({
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(18),
     this.onTap,
-    this.color = Colors.white,
+    this.color,
     this.gradient,
   });
 
   final Widget child;
   final EdgeInsetsGeometry padding;
   final VoidCallback? onTap;
-  final Color color;
+
+  /// Optional tint mixed into the glass.
+  final Color? color;
   final Gradient? gradient;
 
   @override
   Widget build(BuildContext context) {
-    final radius = BorderRadius.circular(24);
-    return Container(
-      decoration: BoxDecoration(
-        color: gradient == null ? color : null,
-        gradient: gradient,
-        borderRadius: radius,
-        boxShadow: AppShadows.soft,
-      ),
+    return Glass(
+      radius: 24,
+      tint: color,
+      gradient: gradient,
       child: Material(
         type: MaterialType.transparency,
         child: InkWell(
-          borderRadius: radius,
+          borderRadius: BorderRadius.circular(24),
           onTap: onTap,
           child: Padding(padding: padding, child: child),
         ),
+      ),
+    );
+  }
+}
+
+/// The glass effect itself: background blur, translucent fill and a soft
+/// light border. Used by [AppCard], lists, tiles and the login card.
+class Glass extends StatelessWidget {
+  const Glass({
+    super.key,
+    required this.child,
+    this.radius = 24,
+    this.tint,
+    this.gradient,
+    this.blur = 18,
+    this.selected = false,
+    this.selectedColor = AppColors.primary,
+  });
+
+  final Widget child;
+  final double radius;
+  final Color? tint;
+  final Gradient? gradient;
+  final double blur;
+  final bool selected;
+  final Color selectedColor;
+
+  @override
+  Widget build(BuildContext context) {
+    final borderRadius = BorderRadius.circular(radius);
+    final accent = tint ?? Colors.white;
+    return DecoratedBox(
+      decoration: BoxDecoration(borderRadius: borderRadius, boxShadow: AppShadows.soft),
+      child: ClipRRect(
+        borderRadius: borderRadius,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              borderRadius: borderRadius,
+              gradient: gradient ??
+                  LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: selected
+                        ? [selectedColor.withValues(alpha: 0.30), selectedColor.withValues(alpha: 0.12)]
+                        : [
+                            accent.withValues(alpha: tint == null ? 0.13 : 0.26),
+                            accent.withValues(alpha: tint == null ? 0.04 : 0.08),
+                          ],
+                  ),
+              border: Border.all(
+                color: selected ? selectedColor : Colors.white.withValues(alpha: 0.16),
+                width: selected ? 1.6 : 1,
+              ),
+            ),
+            // Gives taps inside the glass a visible ripple.
+            child: Material(type: MaterialType.transparency, child: child),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Night sky with soft glowing colour blobs. The glass cards blur these
+/// blobs, which is what makes the frosted look visible.
+class GlassBackground extends StatelessWidget {
+  const GlassBackground({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        const Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFF0B1636), AppColors.night, Color(0xFF071F24)],
+              ),
+            ),
+          ),
+        ),
+        Positioned.fill(
+          child: IgnorePointer(
+            child: Stack(
+              children: const [
+                Align(alignment: Alignment(-1.3, -1.0), child: GlowBlob(color: AppColors.primary, size: 360)),
+                Align(alignment: Alignment(1.4, -0.2), child: GlowBlob(color: AppColors.purple, size: 320)),
+                Align(alignment: Alignment(-0.9, 1.25), child: GlowBlob(color: AppColors.blue, size: 360)),
+              ],
+            ),
+          ),
+        ),
+        Positioned.fill(child: child),
+      ],
+    );
+  }
+}
+
+/// A [Scaffold] on the glass background, with a see through app bar.
+/// Every screen uses it so the glass has something to blur.
+class GlassScaffold extends StatelessWidget {
+  const GlassScaffold({
+    super.key,
+    this.appBar,
+    required this.body,
+    this.floatingActionButton,
+    this.bottomNavigationBar,
+  });
+
+  final PreferredSizeWidget? appBar;
+  final Widget body;
+  final Widget? floatingActionButton;
+  final Widget? bottomNavigationBar;
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassBackground(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: appBar,
+        floatingActionButton: floatingActionButton,
+        bottomNavigationBar: bottomNavigationBar,
+        body: body,
       ),
     );
   }
@@ -423,28 +553,30 @@ class AccountCard extends StatelessWidget {
   }
 }
 
-/// White rounded container that holds a list of activity rows.
+/// Glass container that holds a list of activity rows.
 class ActivityList extends StatelessWidget {
   const ActivityList({super.key, required this.items});
 
   final List<Activity> items;
 
   @override
-  Widget build(BuildContext context) => Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16),
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: AppShadows.soft,
-        ),
-        child: Column(
-          children: [
-            for (var i = 0; i < items.length; i++) ...[
-              if (i > 0) const Divider(indent: 76, endIndent: 16),
-              ActivityTile(activity: items[i]),
-            ],
-          ],
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: Glass(
+          child: Material(
+            type: MaterialType.transparency,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Column(
+                children: [
+                  for (var i = 0; i < items.length; i++) ...[
+                    if (i > 0) const Divider(indent: 76, endIndent: 16),
+                    ActivityTile(activity: items[i]),
+                  ],
+                ],
+              ),
+            ),
+          ),
         ),
       );
 }
@@ -529,7 +661,7 @@ Future<void> showReceipt(BuildContext context, Activity activity) {
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
-    backgroundColor: Colors.white,
+    backgroundColor: AppColors.sheet,
     shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
     builder: (_) => _ReceiptSheet(activity: activity),
   );
@@ -617,6 +749,8 @@ class _ReceiptSheet extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+            _Tracking(activity: activity),
+            const SizedBox(height: 16),
             Row(
               children: [
                 Expanded(
@@ -641,6 +775,108 @@ class _ReceiptSheet extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// The tracking steps shown on a receipt, in order.
+List<String> trackingSteps(Activity a) {
+  final ecoCash = (a.details['Paid out to'] ?? '').startsWith('EcoCash');
+  return switch (a.kind) {
+    ActivityKind.sendAbroad => [
+        'Paid from your wallet',
+        'Rate locked and sent',
+        ecoCash ? 'Paid into their EcoCash wallet' : 'Paid out to ${a.title}',
+      ],
+    ActivityKind.bill => ['Paid from your wallet', 'Sent to ${a.title}', 'Payment received'],
+    ActivityKind.airtime => ['Paid from your wallet', 'Loaded on the line'],
+    ActivityKind.move => ['Taken from the first account', 'Arrived in the second account'],
+    ActivityKind.scheduled => ['Scheduled', 'Paid from your wallet', 'Delivered'],
+    ActivityKind.savings => ['Paid from your wallet', 'Added to the Mukando pot'],
+  };
+}
+
+/// Step by step progress of a payment, like parcel tracking.
+class _Tracking extends StatelessWidget {
+  const _Tracking({required this.activity});
+
+  final Activity activity;
+
+  @override
+  Widget build(BuildContext context) {
+    final steps = trackingSteps(activity);
+    final allDone = activity.status == ActivityStatus.completed;
+    final failed = activity.status == ActivityStatus.failed;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: AppColors.surface, borderRadius: BorderRadius.circular(18)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Tracking', style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.ink)),
+          const SizedBox(height: 12),
+          for (var i = 0; i < steps.length; i++)
+            _TrackingStep(
+              label: steps[i],
+              done: allDone || (i == 0 && !failed),
+              failed: failed && i == 0,
+              isLast: i == steps.length - 1,
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _TrackingStep extends StatelessWidget {
+  const _TrackingStep({required this.label, required this.done, required this.failed, required this.isLast});
+
+  final String label;
+  final bool done;
+  final bool failed;
+  final bool isLast;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = failed ? AppColors.danger : (done ? AppColors.mint : AppColors.muted);
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Column(
+            children: [
+              Container(
+                width: 22,
+                height: 22,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: done || failed ? color : Colors.transparent,
+                  border: Border.all(color: color, width: 2),
+                ),
+                child: done || failed
+                    ? Icon(failed ? Icons.close : Icons.check, size: 14, color: AppColors.night)
+                    : null,
+              ),
+              if (!isLast)
+                Expanded(child: Container(width: 2, color: color.withValues(alpha: 0.45))),
+            ],
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Padding(
+              padding: EdgeInsets.only(bottom: isLast ? 0 : 16),
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  color: done || failed ? AppColors.ink : AppColors.muted,
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

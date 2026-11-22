@@ -23,7 +23,7 @@ class MukandoScreen extends StatelessWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.sheet,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
       builder: (_) => const _NewClubSheet(),
     );
@@ -33,7 +33,7 @@ class MukandoScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>();
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(title: const Text('Mukando')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _newClub(context),
@@ -191,13 +191,11 @@ class _ClubCard extends StatelessWidget {
         const SizedBox(height: 14),
 
         // Members
-        Container(
+        Glass(
+          child: Material(
+            type: MaterialType.transparency,
+            child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 6),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: AppShadows.soft,
-          ),
           child: Column(
             children: [
               for (var i = 0; i < club.members.length; i++) ...[
@@ -211,6 +209,8 @@ class _ClubCard extends StatelessWidget {
             ],
           ),
         ),
+          ),
+          ),
         const SizedBox(height: 14),
         Row(
           children: [

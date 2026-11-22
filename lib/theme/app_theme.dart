@@ -10,10 +10,21 @@ class AppColors {
   static const primaryDark = Color(0xFF008566);
   static const mint = Color(0xFF34E3B0);
   static const cyan = Color(0xFF00A3C4);
-  static const ink = Color(0xFF0B1220);
-  static const muted = Color(0xFF6B7489);
-  static const surface = Color(0xFFF4F6FB);
-  static const border = Color(0xFFE6EAF2);
+  /// Main text colour. Light, because the glass theme is dark.
+  static const ink = Color(0xFFF1F5FF);
+  static const muted = Color(0xFF9BA6BF);
+  /// Inner panels inside glass cards.
+  static const surface = Color(0x14FFFFFF);
+  static const border = Color(0x26FFFFFF);
+
+  /// Deep night background behind the glass.
+  static const night = Color(0xFF060B18);
+
+  /// Solid dark panel for bottom sheets and menus.
+  static const sheet = Color(0xFF111A31);
+
+  /// Frosted glass fill.
+  static const glass = Color(0x1AFFFFFF);
   static const warning = Color(0xFFF59E0B);
   static const danger = Color(0xFFF43F5E);
   static const blue = Color(0xFF3B6BFD);
@@ -51,7 +62,7 @@ class AppShadows {
   AppShadows._();
 
   static const soft = [
-    BoxShadow(color: Color(0x12101828), blurRadius: 24, offset: Offset(0, 8)),
+    BoxShadow(color: Color(0x40000000), blurRadius: 24, offset: Offset(0, 10)),
   ];
 
   static List<BoxShadow> glow(Color color) => [
@@ -64,13 +75,21 @@ class AppTheme {
 
   static const fontFamily = 'PlusJakartaSans';
 
-  static ThemeData light() {
+  /// The dark glass theme. Named light() for history; it is the only theme.
+  static ThemeData light() => dark();
+
+  static ThemeData dark() {
     final scheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
+      brightness: Brightness.dark,
       primary: AppColors.primary,
+      onPrimary: Colors.white,
       secondary: AppColors.cyan,
       tertiary: AppColors.mint,
-      surface: AppColors.surface,
+      surface: AppColors.sheet,
+      onSurface: AppColors.ink,
+      onSurfaceVariant: AppColors.muted,
+      error: AppColors.danger,
     );
 
     OutlineInputBorder border(Color color, [double width = 1]) => OutlineInputBorder(
@@ -82,11 +101,14 @@ class AppTheme {
 
     return ThemeData(
       useMaterial3: true,
+      brightness: Brightness.dark,
       fontFamily: fontFamily,
       colorScheme: scheme,
-      scaffoldBackgroundColor: AppColors.surface,
-      appBarTheme: const AppBarTheme(
-        backgroundColor: AppColors.surface,
+      scaffoldBackgroundColor: AppColors.night,
+      canvasColor: AppColors.sheet,
+      appBarTheme: const AppBarThemeData(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
         foregroundColor: AppColors.ink,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -98,9 +120,9 @@ class AppTheme {
           color: AppColors.ink,
         ),
       ),
-      inputDecorationTheme: InputDecorationTheme(
+      inputDecorationTheme: InputDecorationThemeData(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.glass,
         contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
         labelStyle: const TextStyle(color: AppColors.muted),
         prefixIconColor: AppColors.muted,
@@ -108,6 +130,9 @@ class AppTheme {
         enabledBorder: border(AppColors.border),
         focusedBorder: border(AppColors.primary, 1.8),
         errorBorder: border(AppColors.danger),
+        focusedErrorBorder: border(AppColors.danger, 1.8),
+        hintStyle: const TextStyle(color: AppColors.muted),
+        suffixIconColor: AppColors.muted,
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
@@ -126,7 +151,7 @@ class AppTheme {
         ),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.glass,
         selectedColor: AppColors.primary,
         side: const BorderSide(color: AppColors.border),
         shape: const StadiumBorder(),
@@ -138,7 +163,8 @@ class AppTheme {
             )),
       ),
       navigationBarTheme: NavigationBarThemeData(
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xCC0B1426),
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         height: 72,
         indicatorColor: AppColors.primary.withValues(alpha: 0.14),
@@ -146,10 +172,10 @@ class AppTheme {
               fontFamily: fontFamily,
               fontSize: 12,
               fontWeight: selected(s) ? FontWeight.w800 : FontWeight.w600,
-              color: selected(s) ? AppColors.primaryDark : AppColors.muted,
+              color: selected(s) ? AppColors.mint : AppColors.muted,
             )),
         iconTheme: WidgetStateProperty.resolveWith(
-          (s) => IconThemeData(color: selected(s) ? AppColors.primaryDark : AppColors.muted),
+          (s) => IconThemeData(color: selected(s) ? AppColors.mint : AppColors.muted),
         ),
       ),
       switchTheme: SwitchThemeData(
@@ -157,7 +183,20 @@ class AppTheme {
       ),
       snackBarTheme: const SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
-        backgroundColor: AppColors.midnight,
+        backgroundColor: AppColors.sheet,
+        contentTextStyle: TextStyle(fontFamily: fontFamily, color: AppColors.ink),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.sheet,
+        surfaceTintColor: Colors.transparent,
+      ),
+      dialogTheme: const DialogThemeData(
+        backgroundColor: AppColors.sheet,
+        surfaceTintColor: Colors.transparent,
+      ),
+      popupMenuTheme: const PopupMenuThemeData(color: AppColors.sheet),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(foregroundColor: AppColors.mint),
       ),
       dividerTheme: const DividerThemeData(color: AppColors.border, space: 1),
     );

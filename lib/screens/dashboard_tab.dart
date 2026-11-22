@@ -129,12 +129,10 @@ class _DashboardTabState extends State<DashboardTab> {
           order: 1,
           child: Container(
             margin: const EdgeInsets.fromLTRB(16, 18, 16, 0),
+            child: Glass(
+              radius: 26,
+              child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 6),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(26),
-              boxShadow: AppShadows.soft,
-            ),
             child: Column(
               children: [
                 Row(
@@ -198,6 +196,8 @@ class _DashboardTabState extends State<DashboardTab> {
               ],
             ),
           ),
+            ),
+            ),
         ),
 
         const SectionHeader('Your accounts'),

@@ -47,7 +47,7 @@ class _MoveMoneyScreenState extends State<MoveMoneyScreen> {
     final current = isFrom ? _from : _to;
     final id = await showModalBottomSheet<String>(
       context: context,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.sheet,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
       builder: (ctx) => SafeArea(
         child: ListView(
@@ -102,7 +102,7 @@ class _MoveMoneyScreenState extends State<MoveMoneyScreen> {
     final from = wallet.accountById(_from);
     final to = wallet.accountById(_to);
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(title: const Text('Move money')),
       body: PageWidth(
         child: ListView(

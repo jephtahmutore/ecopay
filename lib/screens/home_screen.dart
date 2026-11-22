@@ -26,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
       const ProfileTab(),
     ];
 
-    return Scaffold(
+    return GlassScaffold(
       body: SafeArea(child: PageWidth(child: pages[_tab])),
       bottomNavigationBar: DecoratedBox(
         decoration: const BoxDecoration(

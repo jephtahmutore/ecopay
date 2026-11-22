@@ -66,7 +66,7 @@ class _PayBillsScreenState extends State<PayBillsScreen> {
     final wallet = context.watch<WalletProvider>();
     final billers = DemoData.billers[_category]!;
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(title: const Text('Pay for home')),
       body: PageWidth(
         child: ListView(
@@ -204,7 +204,7 @@ class _CategoryTile extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: selected ? look.color.withValues(alpha: 0.14) : Colors.white,
+          color: selected ? look.color.withValues(alpha: 0.2) : AppColors.glass,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(color: selected ? look.color : AppColors.border, width: selected ? 1.6 : 1),
         ),

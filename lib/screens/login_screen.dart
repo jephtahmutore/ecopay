@@ -89,15 +89,10 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 24),
 
                       // Login card
-                      Container(
+                      Glass(
+                        radius: 28,
+                        child: Padding(
                         padding: const EdgeInsets.all(22),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(28),
-                          boxShadow: const [
-                            BoxShadow(color: Color(0x40000000), blurRadius: 40, offset: Offset(0, 20)),
-                          ],
-                        ),
                         child: Form(
                           key: _formKey,
                           child: Column(
@@ -170,6 +165,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ),
+                        ),
                       const SizedBox(height: 20),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,

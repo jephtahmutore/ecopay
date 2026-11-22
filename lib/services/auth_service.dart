@@ -21,11 +21,42 @@ class AuthService {
 
   final FlutterSecureStorage _storage;
 
+  /// Used only when the platform blocks secure storage, for example a
+  /// browser in private mode or a sandboxed web preview. The session then
+  /// lasts until the app or tab is closed.
+  final Map<String, String> _memory = {};
+
+  Future<String?> _read(String key) async {
+    try {
+      return await _storage.read(key: key) ?? _memory[key];
+    } catch (_) {
+      return _memory[key];
+    }
+  }
+
+  Future<void> _write(String key, String value) async {
+    _memory[key] = value;
+    try {
+      await _storage.write(key: key, value: value);
+    } catch (_) {
+      // Storage blocked: the in memory copy above is used instead.
+    }
+  }
+
+  Future<void> _delete(String key) async {
+    _memory.remove(key);
+    try {
+      await _storage.delete(key: key);
+    } catch (_) {
+      // Nothing stored to clear.
+    }
+  }
+
   /// Returns the signed in user's email, or null if there is no session.
   Future<String?> restoreSession() async {
-    final token = await _storage.read(key: _tokenKey);
+    final token = await _read(_tokenKey);
     if (token == null) return null;
-    return _storage.read(key: _emailKey);
+    return _read(_emailKey);
   }
 
   Future<void> signIn({required String email, required String pin}) async {
@@ -36,28 +67,28 @@ class AuthService {
       throw ArgumentError('Your PIN must be 4 digits');
     }
     await Future<void>.delayed(const Duration(milliseconds: 400));
-    await _storage.write(key: _tokenKey, value: _generateToken());
-    await _storage.write(key: _emailKey, value: email.trim());
+    await _write(_tokenKey, _generateToken());
+    await _write(_emailKey, email.trim());
     // Kept in encrypted secure storage so the app lock can check it.
-    await _storage.write(key: _pinKey, value: pin);
+    await _write(_pinKey, pin);
   }
 
   /// Checks the PIN for the app lock screen.
   Future<bool> verifyPin(String pin) async {
-    final saved = await _storage.read(key: _pinKey);
+    final saved = await _read(_pinKey);
     if (saved == null) {
       // Sessions from before the app lock existed: adopt the first PIN.
       if (!isValidPin(pin)) return false;
-      await _storage.write(key: _pinKey, value: pin);
+      await _write(_pinKey, pin);
       return true;
     }
     return saved == pin;
   }
 
   Future<void> signOut() async {
-    await _storage.delete(key: _tokenKey);
-    await _storage.delete(key: _emailKey);
-    await _storage.delete(key: _pinKey);
+    await _delete(_tokenKey);
+    await _delete(_emailKey);
+    await _delete(_pinKey);
   }
 
   static bool isValidEmail(String email) =>

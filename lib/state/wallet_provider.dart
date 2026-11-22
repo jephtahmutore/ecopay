@@ -40,8 +40,17 @@ class WalletProvider extends ChangeNotifier {
     }
   }
 
-  /// Currencies recipients can receive.
-  static const receiveCurrencies = ['ZAR', 'ZMW', 'BWP', 'MWK', 'GBP'];
+  /// Currencies recipients can receive. USD goes straight into an EcoCash
+  /// wallet in Zimbabwe.
+  static const receiveCurrencies = ['USD', 'ZAR', 'ZMW', 'BWP', 'MWK', 'GBP'];
+
+  /// True when this currency is paid out to an EcoCash wallet in Zimbabwe.
+  static bool isEcoCashPayout(String currency) => currency == sendCurrency;
+
+  /// Econet lines start with 077 or 078 (+263 77 or +263 78).
+  /// EcoCash wallets use these numbers.
+  static bool isEconetNumber(String phone) =>
+      RegExp(r'^(\+?263|0)7[78]\d{7}$').hasMatch(phone.replaceAll(RegExp(r'[\s\-()]'), ''));
   static const sendCurrency = 'USD';
   static const walletId = 'wallet';
   static const billCategories = ['School fees', 'Electricity', 'Groceries', 'Medical'];
@@ -199,7 +208,8 @@ class WalletProvider extends ChangeNotifier {
     quote = null;
     notifyListeners();
     try {
-      final rate = await _rates.usdTo(receiveCurrency);
+      // USD to an EcoCash wallet needs no conversion, so skip the rate service.
+      final rate = isEcoCashPayout(receiveCurrency) ? 1.0 : await _rates.usdTo(receiveCurrency);
       quote = Quote.create(
         sendCurrency: sendCurrency,
         receiveCurrency: receiveCurrency,
@@ -226,6 +236,13 @@ class WalletProvider extends ChangeNotifier {
     loading = true;
     error = null;
     notifyListeners();
+    final ecoCash = isEcoCashPayout(current.receiveCurrency);
+    if (ecoCash && !isEconetNumber(recipientPhone)) {
+      error = 'EcoCash needs an Econet number starting with 077 or 078';
+      loading = false;
+      notifyListeners();
+      return null;
+    }
     try {
       final transfer = await _repository.send(
         quote: current,
@@ -236,7 +253,7 @@ class WalletProvider extends ChangeNotifier {
         id: transfer.id,
         kind: ActivityKind.sendAbroad,
         title: transfer.recipientName,
-        subtitle: 'Sent to ${transfer.recipientPhone}',
+        subtitle: ecoCash ? 'To EcoCash ${transfer.recipientPhone}' : 'Sent to ${transfer.recipientPhone}',
         amountCents: current.totalCents,
         feeCents: current.feeCents,
         category: 'Family',
@@ -245,6 +262,7 @@ class WalletProvider extends ChangeNotifier {
           'Recipient': transfer.recipientName,
           'Phone': transfer.recipientPhone,
           'They receive': Money.formatWithCurrency(current.receiveCents, current.receiveCurrency),
+          'Paid out to': ecoCash ? 'EcoCash wallet, Zimbabwe' : 'Mobile wallet',
           'Exchange rate':
               '1 ${current.sendCurrency} = ${current.rate.toStringAsFixed(2)} ${current.receiveCurrency}',
           'Fee': Money.formatWithCurrency(current.feeCents, current.sendCurrency),

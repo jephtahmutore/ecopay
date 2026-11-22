@@ -21,6 +21,8 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
   final _amount = TextEditingController();
   String _currency = WalletProvider.receiveCurrencies.first;
 
+  bool get _ecoCash => WalletProvider.isEcoCashPayout(_currency);
+
   @override
   void initState() {
     super.initState();
@@ -77,7 +79,7 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
     final quote = wallet.quote;
     final recents = wallet.recentRecipients;
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(title: const Text('Send money')),
       body: PageWidth(
         child: Form(
@@ -117,13 +119,21 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                 key: const Key('recipientPhone'),
                 controller: _phone,
                 keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  labelText: 'Phone, with country code',
-                  prefixIcon: Icon(Icons.phone_outlined),
+                decoration: InputDecoration(
+                  labelText: _ecoCash ? 'EcoCash number' : 'Phone, with country code',
+                  hintText: _ecoCash ? '077 123 4567' : null,
+                  prefixIcon: const Icon(Icons.phone_outlined),
                 ),
-                validator: (v) => RegExp(r'^\+?\d{9,15}$').hasMatch((v ?? '').replaceAll(' ', ''))
-                    ? null
-                    : 'Enter a valid phone number',
+                validator: (v) {
+                  if (_ecoCash) {
+                    return WalletProvider.isEconetNumber(v ?? '')
+                        ? null
+                        : 'EcoCash needs an Econet number starting with 077 or 078';
+                  }
+                  return RegExp(r'^\+?\d{9,15}$').hasMatch((v ?? '').replaceAll(' ', ''))
+                      ? null
+                      : 'Enter a valid phone number';
+                },
               ),
               const SizedBox(height: 16),
               const Text('They receive in', style: TextStyle(fontWeight: FontWeight.w700, color: AppColors.ink)),
@@ -134,16 +144,33 @@ class _SendMoneyScreenState extends State<SendMoneyScreen> {
                 children: [
                   for (final c in WalletProvider.receiveCurrencies)
                     ChoiceChip(
-                      label: Text(c),
+                      key: Key('currency_$c'),
+                      label: Text(WalletProvider.isEcoCashPayout(c) ? 'USD to EcoCash' : c),
                       selected: c == _currency,
                       showCheckmark: false,
                                             onSelected: (_) {
                         setState(() => _currency = c);
                         context.read<WalletProvider>().clearQuote();
+                        if (_phone.text.isNotEmpty) _formKey.currentState?.validate();
                       },
                     ),
                 ],
               ),
+              if (_ecoCash) ...[
+                const SizedBox(height: 10),
+                const Row(
+                  children: [
+                    Icon(Icons.bolt_rounded, size: 16, color: AppColors.mint),
+                    SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'Lands in their EcoCash wallet in Zimbabwe in seconds, in US dollars, with no exchange rate',
+                        style: TextStyle(color: AppColors.mint, fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 16),
               TextFormField(
                 key: const Key('amount'),

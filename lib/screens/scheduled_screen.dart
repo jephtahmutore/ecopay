@@ -27,7 +27,7 @@ class ScheduledScreen extends StatelessWidget {
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: Colors.white,
+      backgroundColor: AppColors.sheet,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(28))),
       builder: (_) => const _NewScheduleSheet(),
     );
@@ -37,7 +37,7 @@ class ScheduledScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final wallet = context.watch<WalletProvider>();
 
-    return Scaffold(
+    return GlassScaffold(
       appBar: AppBar(title: const Text('Scheduled sends')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _newSchedule(context),
