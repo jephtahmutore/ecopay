@@ -12,13 +12,21 @@ EcoPay is a cross border remittance app built with Flutter. It lets a user sign 
 * **Transparent quotes** showing the amount sent, fee, exchange rate, total and amount received
 * **Quote expiry** after 5 minutes so users never send at a stale rate
 * **Balance checks** that block transfers the wallet cannot cover
-* Receive currencies: ZAR, ZMW, BWP, MWK and GBP
+* Receive currencies: USD (Zimbabwe), ZAR, ZMW, BWP, MWK and GBP
+* **EcoCash payouts**: send US dollars straight into an EcoCash wallet in Zimbabwe, with Econet number checks (077 and 078 lines) and no exchange rate cost
+* **Choice of payout**: EcoCash, mobile wallet, bank account or cash pickup, depending on the country
+* **Econet airtime**: top up any Econet line from the wallet, with no fee
+* **Send again**: recent recipients appear on the home screen for one tap repeat transfers
+* **Receipts with tracking**: every transfer and top up has a receipt with a step by step status timeline and a reference you can copy
+* **Monthly insights**: money sent, fees paid, airtime bought and the country you send to most
+* **Glass design**: a dark, modern frosted glass interface built with `BackdropFilter`
 
 ## How it is built
 
 | Layer | Folder | What it does |
 | --- | --- | --- |
-| Screens | `lib/screens` | Login, home (wallet) and send money screens |
+| Screens | `lib/screens` | Login, home (wallet), send money, airtime and receipt screens |
+| Design | `lib/theme`, `lib/widgets` | Glass theme, `GlassCard`, `GlassScaffold` and shared widgets |
 | State | `lib/state` | `AuthProvider` and `WalletProvider` using the Provider package |
 | Services | `lib/services` | Exchange rates (HTTP), authentication (secure storage), transfers |
 | Models | `lib/models` | `Quote` and `Transfer` |
